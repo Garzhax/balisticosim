@@ -2,15 +2,16 @@ using UnityEngine;
 
 public class TargetBlock : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public int hitPoints = 1;
+    public GameObject breakEffect; // particulas opcional
 
-    // Update is called once per frame
-    void Update()
+    public void OnHit(Vector3 hitPoint)
     {
-        
+        hitPoints--;
+        if (breakEffect != null) Instantiate(breakEffect, hitPoint, Quaternion.identity);
+        if (hitPoints <= 0)
+        {
+            Destroy(gameObject);
+        }
     }
 }

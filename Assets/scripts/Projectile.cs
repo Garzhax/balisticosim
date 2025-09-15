@@ -2,15 +2,28 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public float lifeTime = 10f; // destruimos después de cierto tiempo
+
     void Start()
     {
-        
+        Destroy(gameObject, lifeTime);
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnCollisionEnter(Collision collision)
     {
-        
+        // Si choca con target, notificar y destruir
+        if (collision.collider.CompareTag("Target"))
+        {
+            // intentar buscar script TargetBlock para efectos
+            TargetBlock tb = collision.collider.GetComponent<TargetBlock>();
+            if (tb != null) tb.OnHit(collision.contacts[0].point);
+
+            Destroy(gameObject);
+        }
+        else
+        {
+            // Si choca con otro objeto, destruimos la bala (o hacemos rebote si quieres)
+            Destroy(gameObject);
+        }
     }
 }
