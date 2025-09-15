@@ -13,7 +13,7 @@ public class ShooterController : MonoBehaviour
     public Slider angleSlider;          // 0..90 (grados)
     public Slider yawSlider;            // -180..180 (grados yaw/direccion horizontal)
     public Slider forceSlider;          // fuerza inicial  
-    public TMP_Dropdown massDropdown; // seleccionar masa
+    public TMP_Dropdown massDropdown;   // seleccionar masa
     public Button shootButton;
     public Toggle showTrajectoryToggle;
 
@@ -24,12 +24,19 @@ public class ShooterController : MonoBehaviour
 
     void Start()
     {
-        if (shootButton != null) shootButton.onClick.AddListener(Shoot);
+        if (shootButton != null)
+        {
+            shootButton.onClick.AddListener(Shoot);
+            Debug.Log("✅ Botón de disparo conectado.");
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ No hay botón de disparo asignado en el inspector!");
+        }
     }
 
     void Update()
     {
-        // Actualiza predicci�n en cada frame si est� marcado
         if (showTrajectoryToggle != null && showTrajectoryToggle.isOn)
             DrawTrajectoryPreview();
         else if (trajectoryLine != null)
@@ -38,7 +45,13 @@ public class ShooterController : MonoBehaviour
 
     public void Shoot()
     {
-        if (projectilePrefab == null || muzzle == null) return;
+        Debug.Log("🔫 Intentando disparar...");
+
+        if (projectilePrefab == null || muzzle == null)
+        {
+            Debug.LogError("❌ Falta asignar el prefab o el muzzle en el inspector!");
+            return;
+        }
 
         // Obtener valores desde UI
         float angleDeg = angleSlider != null ? angleSlider.value : 45f;
@@ -48,7 +61,6 @@ public class ShooterController : MonoBehaviour
 
         if (massDropdown != null)
         {
-            // ejemplo simple: indices: 0->0.5,1->1,2->2
             switch (massDropdown.value)
             {
                 case 0: mass = 0.5f; break;
@@ -58,8 +70,9 @@ public class ShooterController : MonoBehaviour
             }
         }
 
-        // Convertir �ngulo/direccion a vector
-        // angle sobre el plano vertical (elevaci�n), yaw sobre Y (rotaci�n horizontal)
+        Debug.Log($"🎛 Ángulo: {angleDeg}°, Yaw: {yawDeg}°, Fuerza: {force}, Masa: {mass}");
+
+        // Calcular dirección
         float angleRad = angleDeg * Mathf.Deg2Rad;
         float yawRad = yawDeg * Mathf.Deg2Rad;
 
@@ -69,13 +82,22 @@ public class ShooterController : MonoBehaviour
             Mathf.Cos(angleRad) * Mathf.Cos(yawRad)  // z
         );
 
-        // Instanciar proyectil y aplicar fuerza inicial
+        Debug.Log("📐 Dirección normalizada: " + dir.normalized);
+
+        // Instanciar proyectil
         GameObject proj = Instantiate(projectilePrefab, muzzle.position, Quaternion.identity);
+        Debug.Log("✅ Proyectil instanciado en: " + muzzle.position);
+
         Rigidbody rb = proj.GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.mass = mass;
-            rb.linearVelocity = dir.normalized * (force / rb.mass); // podemos decidir dividir por masa o no
+            rb.linearVelocity = dir.normalized * (force / rb.mass);
+            Debug.Log("🚀 Velocidad aplicada: " + rb.linearVelocity);
+        }
+        else
+        {
+            Debug.LogError("❌ El proyectil no tiene Rigidbody!");
         }
     }
 
@@ -86,11 +108,11 @@ public class ShooterController : MonoBehaviour
         trajectoryLine.enabled = true;
         List<Vector3> points = new List<Vector3>();
 
-        // Obtener par�metros
         float angleDeg = angleSlider != null ? angleSlider.value : 45f;
         float yawDeg = yawSlider != null ? yawSlider.value : 0f;
         float force = forceSlider != null ? forceSlider.value : 10f;
         float mass = 1f;
+
         if (massDropdown != null)
         {
             switch (massDropdown.value) { case 0: mass = 0.5f; break; case 1: mass = 1f; break; case 2: mass = 2f; break; default: mass = 1f; break; }
@@ -108,12 +130,10 @@ public class ShooterController : MonoBehaviour
         for (int i = 0; i < trajectoryPoints; i++)
         {
             float t = i * timeStep;
-            // posicion = pos + v0 * t + 0.5 * g * t^2
             Vector3 g = Physics.gravity;
             Vector3 p = pos + v0 * t + 0.5f * g * t * t;
             points.Add(p);
 
-            // opcional: romper la predicci�n si toca algo (raycast entre puntos)
             if (i > 0)
             {
                 RaycastHit hit;
