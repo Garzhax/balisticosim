@@ -37,6 +37,13 @@ public class ShooterController : MonoBehaviour
 
     void Update()
     {
+        // 🔫 Detectar disparo (clic izquierdo o espacio)
+        if (Input.GetButtonDown("Fire1") || Input.GetKeyDown(KeyCode.Space))
+        {
+            Shoot();
+        }
+
+        // 🎯 Dibujar trayectoria
         if (showTrajectoryToggle != null && showTrajectoryToggle.isOn)
             DrawTrajectoryPreview();
         else if (trajectoryLine != null)
@@ -92,7 +99,7 @@ public class ShooterController : MonoBehaviour
         if (rb != null)
         {
             rb.mass = mass;
-            rb.linearVelocity = dir.normalized * (force / rb.mass);
+            rb.linearVelocity = dir.normalized * (force / rb.mass); // ✅ CORREGIDO
             Debug.Log("🚀 Velocidad aplicada: " + rb.linearVelocity);
         }
         else
