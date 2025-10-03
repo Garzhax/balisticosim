@@ -23,6 +23,12 @@ public class ShooterController : MonoBehaviour
     public int linePoints = 30;
     public float timeStep = 0.1f;
 
+    // 📊 Variables estáticas que se guardarán en Firebase
+    public static float lastAngle;
+    public static float lastForce;
+    public static float lastProjectileMass;
+    public static string lastImpactResult;
+
     void Start()
     {
         if (forceSlider != null) forceSlider.value = force;
@@ -42,7 +48,7 @@ public class ShooterController : MonoBehaviour
             trajectoryLine.enabled = false;
     }
 
-    // 🚀 Este lo llamás desde el botón de UI
+    // 🚀 Llamado desde el botón de disparo en la UI
     public void Shoot()
     {
         Quaternion rotation = Quaternion.Euler(angle, yaw, 0);
@@ -54,7 +60,13 @@ public class ShooterController : MonoBehaviour
         if (rb != null)
             rb.linearVelocity = direction.normalized * force;
 
-        Debug.Log($"✅ Proyectil disparado con fuerza {force}");
+        // ✅ Guardamos los valores del disparo actual
+        lastAngle = angle;
+        lastForce = force;
+        lastProjectileMass = rb != null ? rb.mass : 1f;
+        lastImpactResult = "Acierto"; // Por ahora lo dejamos fijo, luego lo podemos calcular con colisión
+
+        Debug.Log($"✅ Disparo registrado -> Ángulo: {lastAngle}°, Fuerza: {lastForce}, Masa: {lastProjectileMass}");
     }
 
     void DrawTrajectoryPreview()

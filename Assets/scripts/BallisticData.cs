@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using Proyecto26;
-using TMPro; // 👈 importante para TMP
+using TMPro;
 
 public class BallisticData : MonoBehaviour
 {
-    public TMP_Text resultText;           // 👈 TMP_Text en lugar de Text
-    public TMP_InputField nameText;       // 👈 TMP_InputField en lugar de InputField
+    public TMP_Text resultText;
+    public TMP_InputField nameText;
 
     public static float angle;
     public static float force;
@@ -16,12 +16,8 @@ public class BallisticData : MonoBehaviour
 
     void Start()
     {
-        // Valores de ejemplo - estos deberían venir desde tu simulador
-        angle = 45f;
-        force = 500f;
-        projectileMass = 1f;
-        impactResult = "Acierto";
-        resultText.text = "Resultado: " + impactResult;
+        // No pongas valores fijos acá ❌
+        resultText.text = "Esperando disparo...";
     }
 
     private void UpdateResult()
@@ -33,8 +29,14 @@ public class BallisticData : MonoBehaviour
     // 📤 Guardar datos en Firebase
     private void PostToDataBase()
     {
-        ShotData shotData = new ShotData();
+        // ✅ Antes de guardar, pasamos los valores reales a shotData
+        shotData.angle = ShooterController.lastAngle;
+        shotData.force = ShooterController.lastForce;
+        shotData.projectileMass = ShooterController.lastProjectileMass;
+        shotData.impactResult = ShooterController.lastImpactResult;
+
         RestClient.Put("https://balisticosim-default-rtdb.firebaseio.com/" + nameText.text + ".json", shotData);
+        Debug.Log("✅ Datos guardados en Firebase");
     }
 
     public void OnSubmit()
